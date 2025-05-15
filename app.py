@@ -23,21 +23,24 @@ download_if_needed(columns_id, "columns.pkl")
 # Load model, scaler, and columns
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
-columns = joblib.load("columns.pkl")
+columns = joblib.load("columns.pkl")  # Must be a list of column names
 
 # Streamlit UI
 st.title("House Price Prediction App")
-
 st.write("Enter the feature values below:")
 
-# Create input fields for all features
+# Create input fields for all required features
 user_input = {}
 for col in columns:
     user_input[col] = st.number_input(f"{col}", value=0.0)
 
-# Make prediction
+# Predict button
 if st.button("Predict"):
-    input_df = pd.DataFrame([user_input])
-    input_scaled = scaler.transform(input_df)
-    prediction = model.predict(input_scaled)
-    st.success(f"Predicted House Price: ${prediction[0]:,.2f}")
+    try:
+        input_df = pd.DataFrame([user_input])
+        input_df = input_df[columns]  # Ensure correct column order
+        input_scaled = scaler.transform(input_df)
+        prediction = model.predict(input_scaled)
+        st.success(f"Predicted House Price: ${prediction[0]:,.2f}")
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
